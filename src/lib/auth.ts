@@ -1,9 +1,13 @@
-import { User } from "next-auth";
+import { User, Account } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { NextAuthOptions } from "next-auth";
+import { PrismaAdapter } from "@next-auth/prisma-adapter";
+import db from "./db";
+import bcrypt from "bcrypt";
 
 export const authOptions: NextAuthOptions = {
+  adapter: PrismaAdapter(db),
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID ?? "",
@@ -20,23 +24,20 @@ export const authOptions: NextAuthOptions = {
         },
       },
       async authorize(credentials): Promise<User | null> {
-        const users = [
-          {
-            id: "test-user-1",
-            userName: "qwer1234",
-            name: "qwer1234",
-            password: "qwer1234",
-            email: "qwer1234@gmail.com",
+        const user = await db.user.findUnique({
+          where: {
+            email: credentials!.email,
           },
-        ];
-        const user = users.find(
-          (user) =>
-            user.email === credentials!.email &&
-            user.password === credentials!.password
-        );
-        return user
-          ? { id: user.id, name: user.name, email: user.email }
-          : null;
+        });
+
+        const { password } = credentials!;
+
+        if (!user || !user.password) return null;
+
+        const matchPassword = bcrypt.compareSync(password, user.password);
+        if (!matchPassword) return null;
+
+        return user;
       },
     }),
   ],
@@ -45,11 +46,33 @@ export const authOptions: NextAuthOptions = {
     strategy: "jwt",
   },
   callbacks: {
+    async signIn({ user, account }: { user: User; account: Account | null }) {
+      if (account && account.provider === "google") {
+        const userFound = await db.user.findUnique({
+          where: {
+            email: user.email!,
+          },
+        });
+
+        if (!userFound) {
+          await db.user.create({
+            data: {
+              email: user.email,
+              name: user.email,
+              image: user.image,
+              // You can add other fields here if needed
+            },
+          });
+        }
+      }
+      return true;
+    },
+
     async jwt({ token, user }) {
       console.log("JWT Callback", { token, user });
       return token;
     },
-    async session({ session, token}) {
+    async session({ session, token }) {
       console.log("Session Callback", { session, token });
       return session;
     },
