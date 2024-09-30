@@ -45,6 +45,9 @@ export const authOptions: NextAuthOptions = {
   session: {
     strategy: "jwt",
   },
+  pages: {
+    signIn: "/auth/signin",
+  },
   callbacks: {
     async signIn({ user, account }: { user: User; account: Account | null }) {
       if (account && account.provider === "google") {
@@ -59,7 +62,6 @@ export const authOptions: NextAuthOptions = {
             data: {
               email: user.email,
               name: user.email,
-              image: user.image,
               // You can add other fields here if needed
             },
           });
@@ -75,6 +77,9 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       console.log("Session Callback", { session, token });
       return session;
+    },
+    async redirect({ baseUrl }) {
+      return baseUrl;
     },
   },
 };
