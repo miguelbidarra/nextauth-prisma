@@ -10,7 +10,7 @@ const Login = () => {
 
   // Google Sign In
   const handleGoogleSignIn = async () => {
-    await signIn("google");
+    await signIn("google", { callbackUrl: "/" });
   };
 
   // Credentials Sign In
@@ -20,6 +20,8 @@ const Login = () => {
       await signIn("credentials", {
         email,
         password,
+        redirect: true,
+        callbackUrl: "/",
       });
     } catch (err) {
       console.log(err);

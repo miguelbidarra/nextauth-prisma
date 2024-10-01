@@ -46,7 +46,7 @@ export const authOptions: NextAuthOptions = {
     strategy: "jwt",
   },
   pages: {
-    //  signIn: "/auth/signin",
+    signIn: "/auth/signin",
   },
   callbacks: {
     async signIn({ user, account }: { user: User; account: Account | null }) {
@@ -77,6 +77,9 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       console.log("Session Callback", { session, token });
       return session;
+    },
+    async redirect({ baseUrl }) {
+      return baseUrl;
     },
   },
 };
