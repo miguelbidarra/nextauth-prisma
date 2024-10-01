@@ -78,9 +78,6 @@ export const authOptions: NextAuthOptions = {
       console.log("Session Callback", { session, token });
       return session;
     },
-    async redirect({ baseUrl }) {
-      return baseUrl;
-    },
   },
 };
 
