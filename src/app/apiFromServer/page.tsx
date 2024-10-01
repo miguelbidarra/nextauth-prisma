@@ -1,4 +1,3 @@
-import { headers } from "next/headers";
 
 export default async function APIFromServer() {
   const resp = await fetch("http://localhost:3000/api/whoAmI", {
