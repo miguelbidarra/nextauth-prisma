@@ -23,7 +23,7 @@ export const authOptions: NextAuthOptions = {
           placeholder: "********",
         },
       },
-      async authorize(credentials): Promise<User | null> {
+      async authorize(credentials) {
         const user = await db.user.findUnique({
           where: {
             email: credentials!.email,
@@ -49,7 +49,7 @@ export const authOptions: NextAuthOptions = {
     signIn: "/auth/signin",
   },
   callbacks: {
-    async signIn({ user, account }: { user: User; account: Account | null }) {
+    async signIn({ user, account }) {
       if (account && account.provider === "google") {
         const userFound = await db.user.findUnique({
           where: {
